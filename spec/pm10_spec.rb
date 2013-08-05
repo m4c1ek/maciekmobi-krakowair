@@ -18,22 +18,22 @@ describe Converter::PM10 do
 
 	it "should parse date" do
 		contents = File.open("./html/pm10.html", "rb").read
-		date = Converter::PM10.new.dateFromHtml(contents)
+		date = Converter::PM10.new.date_from_html(contents)
 		date.should == 1375135200
 	end
 
 	it "should give today (0:00 GMT+2) on no date string" do
-		date = Converter::PM10.new.dateFromHtml("<html>no date in this html</html>")
-		expectedTime = Time.now.to_i - (Time.now.to_i % (60*60*24)) - 60*60*2
-		date.should == expectedTime
+		date = Converter::PM10.new.date_from_html("<html>no date in this html</html>")
+		expected_time = Time.now.to_i - (Time.now.to_i % (60*60*24)) - 60*60*2
+		date.should == expected_time
 	end
 	
 	it "should detect data row" do		
 		page = Nokogiri::HTML(File.open("./html/pm10.html", "r").read)
 		rows = page.css('body table tr')
-		Converter::PM10.new.dataRow?(rows[0]).should == false
-		Converter::PM10.new.dataRow?(rows[1]).should == false
-		Converter::PM10.new.dataRow?(rows[2]).should == true
+		Converter::PM10.new.data_row?(rows[0]).should == false
+		Converter::PM10.new.data_row?(rows[1]).should == false
+		Converter::PM10.new.data_row?(rows[2]).should == true
 	end
 
 	it "should get data row values" do
@@ -41,9 +41,9 @@ describe Converter::PM10 do
 		page = Nokogiri::HTML(contents)
 		rows = page.css('body table tr')
 		row = rows[2]
-		timeRow = rows[1]
-		date = Converter::PM10.new.dateFromHtml(contents)
-		Converter::PM10.new.dataRowValues(row, timeRow, date).should == 
+		time_row = rows[1]
+		date = Converter::PM10.new.date_from_html(contents)
+		Converter::PM10.new.data_row_values(row, time_row, date).should == 
 		{   :location => "Tarnów", 
 			:data => [{:timestamp=>1375138800, :value=>34, :unit=>"µg/m3"},
          {:timestamp=>1375142400, :value=>35, :unit=>"µg/m3"},

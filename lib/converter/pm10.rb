@@ -22,46 +22,46 @@ module Converter
 			return data
 		end
 
-		def dateFromHtml(html)
-			timeComponents = html.scan(/(\d{4})\-(\d{2})\-(\d{2})/)
-			return (Time.now.to_i - (Time.now.to_i % (60*60*24)) - 60*60*2) if timeComponents.empty? 
-			return Time.gm(timeComponents[0][0], timeComponents[0][1], timeComponents[0][2]).to_i - 60*60*2
+		def date_from_html(html)
+			time_components = html.scan(/(\d{4})\-(\d{2})\-(\d{2})/)
+			return (Time.now.to_i - (Time.now.to_i % (60*60*24)) - 60*60*2) if time_components.empty? 
+			return Time.gm(time_components[0][0], time_components[0][1], time_components[0][2]).to_i - 60*60*2
 		end
 
-		def dataFromHtml(html)
+		def data_from_html(html)
 			page = Nokogiri::HTML(html)
 			rows = page.css('body table tbody tr')
 			
 		end
 
-		def dataRow?(row)
-			return false if timeRow?(row) 
+		def data_row?(row)
+			return false if time_row?(row) 
 			numbers = row.css('td').map {|td| td.text.strip}.select {|text| text.is_integer? }
 			return numbers.size > 0
 		end
 
-		def timeRow?(row)
+		def time_row?(row)
 			hours = (1..24).to_a
 			values = row.css('td').map {|td| td.text.strip}.select {|text| text.is_integer? }.map {|text| text.to_i}
-			onlyHours = (hours - (hours & values)).length == 0
-			return onlyHours
+			only_hours = (hours - (hours & values)).length == 0
+			return only_hours
 		end
 
-		def dataRowValues(row, timeRow, date)
-			rowValues = rowValues(row)
-			timeRowValues = rowValues(timeRow)
-			location = rowLocation(row)
-			unit = rowUnit(row)
-			combinedValues = []
-			timeRowValues.each_with_index { |value, i|
-				if (!value.nil? && !rowValues[i].nil?) 
-					then combinedValues << {:timestamp => date+(value*60*60), :value => rowValues[i], :unit => unit } 
+		def data_row_values(row, time_row, date)
+			row_values = row_values(row)
+			time_row_values = row_values(time_row)
+			location = row_location(row)
+			unit = row_unit(row)
+			combined_values = []
+			time_row_values.each_with_index { |value, i|
+				if (!value.nil? && !row_values[i].nil?) 
+					then combined_values << {:timestamp => date+(value*60*60), :value => row_values[i], :unit => unit } 
 				end 
 			}
-			return {:location => location, :data => combinedValues }
+			return {:location => location, :data => combined_values }
 		end
 
-		def rowValues(row)
+		def row_values(row)
 			values = row.css('td').map { |td| 
 				value = td.text.strip
 				(value.empty? || !value.is_integer?) ? nil : value.to_i
@@ -69,11 +69,11 @@ module Converter
 			return values
 		end
 
-		def rowLocation(row)
+		def row_location(row)
 			row.css('td').first.text.strip
 		end
 
-		def rowUnit(row)
+		def row_unit(row)
 			row.css("td")[1].text
 		end
 	end
