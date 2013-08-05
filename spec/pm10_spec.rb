@@ -1,7 +1,9 @@
+require 'nokogiri'
 require_relative '../lib/converter/pm10'
 
 describe Converter::PM10 do
 
+	p10_file = File.dirname(__FILE__) + "/html/pm10.html"
 	rawdata = { :data => [
 				{ :timestamp => 12, :value => 50, :location => "Krakow - Krowodza", :unit => "µg/m" }, 
 				{ :timestamp => 12, :value => 50, :location => "Krakow - Krowodza", :unit => "µg/m" }, 
@@ -9,7 +11,7 @@ describe Converter::PM10 do
 				] }
 
 	it "should convert to map" do
-		contents = File.open("./html/pm10.html", "rb").read
+		contents = File.open(p10_file, "rb").read
 		value = Converter::PM10.new.convert(contents)
 		value[:data].size.should > 0
 		value.should == rawdata
@@ -17,7 +19,7 @@ describe Converter::PM10 do
 
 
 	it "should parse date" do
-		contents = File.open("./html/pm10.html", "rb").read
+		contents = File.open(p10_file, "rb").read
 		date = Converter::PM10.new.date_from_html(contents)
 		date.should == 1375135200
 	end
@@ -29,7 +31,7 @@ describe Converter::PM10 do
 	end
 	
 	it "should detect data row" do		
-		page = Nokogiri::HTML(File.open("./html/pm10.html", "r").read)
+		page = Nokogiri::HTML(File.open(p10_file, "r").read)
 		rows = page.css('body table tr')
 		Converter::PM10.new.data_row?(rows[0]).should == false
 		Converter::PM10.new.data_row?(rows[1]).should == false
@@ -37,7 +39,7 @@ describe Converter::PM10 do
 	end
 
 	it "should detect time row" do		
-		page = Nokogiri::HTML(File.open("./html/pm10.html", "r").read)
+		page = Nokogiri::HTML(File.open(p10_file, "r").read)
 		rows = page.css('body table tr')
 		Converter::PM10.new.time_row?(rows[0]).should == false
 		Converter::PM10.new.time_row?(rows[1]).should == true
@@ -45,7 +47,7 @@ describe Converter::PM10 do
 	end
 
 	it "should get data row values" do
-		contents = File.open("./html/pm10.html", "r").read
+		contents = File.open(p10_file, "r").read
 		page = Nokogiri::HTML(contents)
 		rows = page.css('body table tr')
 		row = rows[2]
@@ -66,14 +68,14 @@ describe Converter::PM10 do
 	end
 
 	it "should find time row" do
-		contents = File.open("./html/pm10.html", "r").read
+		contents = File.open(p10_file, "r").read
 		rows = Converter::PM10.new.each_row(contents)
 		time_row  = Converter::PM10.new.time_row(rows)
 		time_row.nil?.should == false
 	end
 
 	it "should get data rows as block" do
-		contents = File.open("./html/pm10.html", "r").read
+		contents = File.open(p10_file, "r").read
 		Converter::PM10.new.each_data_row(contents){|row| row[:location].nil?.should == false}
 		Converter::PM10.new.each_data_row(contents){|row| row[:data].length.should > 0}
 	end
