@@ -51,10 +51,11 @@ module Converter
 			rowValues = rowValues(row)
 			timeRowValues = rowValues(timeRow)
 			location = rowLocation(row)
+			unit = rowUnit(row)
 			combinedValues = []
 			timeRowValues.each_with_index { |value, i|
 				if (!value.nil? && !rowValues[i].nil?) 
-					then combinedValues << {:timestamp => date+(value*60*60), :value => rowValues[i], :unit => "µg/m3" } 
+					then combinedValues << {:timestamp => date+(value*60*60), :value => rowValues[i], :unit => unit } 
 				end 
 			}
 			return {:location => location, :data => combinedValues }
@@ -69,8 +70,11 @@ module Converter
 		end
 
 		def rowLocation(row)
-			row.css('td')[0].text.strip
+			row.css('td').first.text.strip
 		end
 
+		def rowUnit(row)
+			row.css("td")[1].text
+		end
 	end
 end
