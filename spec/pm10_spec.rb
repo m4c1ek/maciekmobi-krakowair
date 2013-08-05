@@ -29,7 +29,7 @@ describe Converter::PM10 do
 	end
 	
 	it "should detect data row" do		
-		page = Nokogiri::HTML(File.open("./html/pm10.html", "rb").read)
+		page = Nokogiri::HTML(File.open("./html/pm10.html", "r").read)
 		rows = page.css('body table tr')
 		Converter::PM10.new.dataRow?(rows[0]).should == false
 		Converter::PM10.new.dataRow?(rows[1]).should == false
@@ -37,7 +37,7 @@ describe Converter::PM10 do
 	end
 
 	it "should get data row values" do
-		contents = File.open("./html/pm10.html", "rb").read
+		contents = File.open("./html/pm10.html", "r").read
 		page = Nokogiri::HTML(contents)
 		rows = page.css('body table tr')
 		row = rows[2]
