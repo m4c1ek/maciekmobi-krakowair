@@ -28,10 +28,18 @@ module Converter
 			return Time.gm(time_components[0][0], time_components[0][1], time_components[0][2]).to_i - 60*60*2
 		end
 
-		def data_from_html(html)
-			page = Nokogiri::HTML(html)
-			rows = page.css('body table tbody tr')
-			
+		def data_row_values(row, time_row, date)
+			row_values = row_values(row)
+			time_row_values = row_values(time_row)
+			location = row_location(row)
+			unit = row_unit(row)
+			combined_values = []
+			time_row_values.each_with_index { |value, i|
+				if (!value.nil? && !row_values[i].nil?) 
+					then combined_values << {:timestamp => date+(value*60*60), :value => row_values[i], :unit => unit } 
+				end 
+			}
+			return {:location => location, :data => combined_values }
 		end
 
 		def data_row?(row)
@@ -47,19 +55,24 @@ module Converter
 			return only_hours
 		end
 
-		def data_row_values(row, time_row, date)
-			row_values = row_values(row)
-			time_row_values = row_values(time_row)
-			location = row_location(row)
-			unit = row_unit(row)
-			combined_values = []
-			time_row_values.each_with_index { |value, i|
-				if (!value.nil? && !row_values[i].nil?) 
-					then combined_values << {:timestamp => date+(value*60*60), :value => row_values[i], :unit => unit } 
-				end 
-			}
-			return {:location => location, :data => combined_values }
+		def time_row(rows) 
+			rows.select {|row| time_row?(row)}.first		
 		end
+
+		def each_data_row(html)
+			time = date_from_html(html)
+			time_row = time_row(each_row(html))
+			each_row(html) {|row| yield data_row_values(row, time_row, time) if data_row?(row)}
+		end
+
+		def each_row(html)
+			page = Nokogiri::HTML(html)
+			rows = page.css('body table tr')
+			rows.each {|row| yield row if block_given?}
+			return rows
+		end
+		
+		protected
 
 		def row_values(row)
 			values = row.css('td').map { |td| 

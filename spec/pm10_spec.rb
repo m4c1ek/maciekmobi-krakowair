@@ -36,6 +36,14 @@ describe Converter::PM10 do
 		Converter::PM10.new.data_row?(rows[2]).should == true
 	end
 
+	it "should detect time row" do		
+		page = Nokogiri::HTML(File.open("./html/pm10.html", "r").read)
+		rows = page.css('body table tr')
+		Converter::PM10.new.time_row?(rows[0]).should == false
+		Converter::PM10.new.time_row?(rows[1]).should == true
+		Converter::PM10.new.time_row?(rows[2]).should == false
+	end
+
 	it "should get data row values" do
 		contents = File.open("./html/pm10.html", "r").read
 		page = Nokogiri::HTML(contents)
@@ -55,5 +63,18 @@ describe Converter::PM10 do
          {:timestamp=>1375164000, :value=>21, :unit=>"µg/m3"},
          {:timestamp=>1375167600, :value=>18, :unit=>"µg/m3"},
          {:timestamp=>1375171200, :value=>19, :unit=>"µg/m3"}] }
+	end
+
+	it "should find time row" do
+		contents = File.open("./html/pm10.html", "r").read
+		rows = Converter::PM10.new.each_row(contents)
+		time_row  = Converter::PM10.new.time_row(rows)
+		time_row.nil?.should == false
+	end
+
+	it "should get data rows as block" do
+		contents = File.open("./html/pm10.html", "r").read
+		Converter::PM10.new.each_data_row(contents){|row| row[:location].nil?.should == false}
+		Converter::PM10.new.each_data_row(contents){|row| row[:data].length.should > 0}
 	end
 end
