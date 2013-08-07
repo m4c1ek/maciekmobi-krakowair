@@ -4,19 +4,11 @@ require_relative '../lib/converter/pm10'
 describe Converter::PM10 do
 
 	p10_file = File.dirname(__FILE__) + "/html/pm10.html"
-	rawdata = { :data => [
-				{ :timestamp => 12, :value => 50, :location => "Krakow - Krowodza", :unit => "µg/m" }, 
-				{ :timestamp => 12, :value => 50, :location => "Krakow - Krowodza", :unit => "µg/m" }, 
-				{ :timestamp => 12, :value => 50, :location => "Krakow - Krowodza", :unit => "µg/m" } 
-				] }
 
 	it "should convert to map" do
-		contents = File.open(p10_file, "rb").read
-		value = Converter::PM10.new.convert(contents)
-		value[:data].size.should > 0
-		value.should == rawdata
+		contents = File.open(p10_file, "r").read
+		Converter::PM10.new.convert(contents)[:data].length.should == 89
 	end
-
 
 	it "should parse date" do
 		contents = File.open(p10_file, "rb").read
@@ -54,17 +46,16 @@ describe Converter::PM10 do
 		time_row = rows[1]
 		date = Converter::PM10.new.date_from_html(contents)
 		Converter::PM10.new.data_row_values(row, time_row, date).should == 
-		{   :location => "Tarnów", 
-			:data => [{:timestamp=>1375138800, :value=>34, :unit=>"µg/m3"},
-         {:timestamp=>1375142400, :value=>35, :unit=>"µg/m3"},
-         {:timestamp=>1375146000, :value=>37, :unit=>"µg/m3"},
-         {:timestamp=>1375149600, :value=>50, :unit=>"µg/m3"},
-         {:timestamp=>1375153200, :value=>64, :unit=>"µg/m3"},
-         {:timestamp=>1375156800, :value=>27, :unit=>"µg/m3"},
-         {:timestamp=>1375160400, :value=>24, :unit=>"µg/m3"},
-         {:timestamp=>1375164000, :value=>21, :unit=>"µg/m3"},
-         {:timestamp=>1375167600, :value=>18, :unit=>"µg/m3"},
-         {:timestamp=>1375171200, :value=>19, :unit=>"µg/m3"}] }
+		{ :data => [{:timestamp=>1375138800, :value=>34, :unit=>"µg/m3", :location => "Tarnów"},
+         {:timestamp=>1375142400, :value=>35, :unit=>"µg/m3", :location => "Tarnów"},
+         {:timestamp=>1375146000, :value=>37, :unit=>"µg/m3", :location => "Tarnów"},
+         {:timestamp=>1375149600, :value=>50, :unit=>"µg/m3", :location => "Tarnów"},
+         {:timestamp=>1375153200, :value=>64, :unit=>"µg/m3", :location => "Tarnów"},
+         {:timestamp=>1375156800, :value=>27, :unit=>"µg/m3", :location => "Tarnów"},
+         {:timestamp=>1375160400, :value=>24, :unit=>"µg/m3", :location => "Tarnów"},
+         {:timestamp=>1375164000, :value=>21, :unit=>"µg/m3", :location => "Tarnów"},
+         {:timestamp=>1375167600, :value=>18, :unit=>"µg/m3", :location => "Tarnów"},
+         {:timestamp=>1375171200, :value=>19, :unit=>"µg/m3", :location => "Tarnów"}] }
 	end
 
 	it "should find time row" do
@@ -76,7 +67,16 @@ describe Converter::PM10 do
 
 	it "should get data rows as block" do
 		contents = File.open(p10_file, "r").read
-		Converter::PM10.new.each_data_row(contents){|row| row[:location].nil?.should == false}
+		Converter::PM10.new.each_data_row(contents){|row| row[:data][0][:location].nil?.should == false}
 		Converter::PM10.new.each_data_row(contents){|row| row[:data].length.should > 0}
+	end
+
+	it "should get data rows values" do
+		contents = File.open(p10_file, "r").read
+		page = Nokogiri::HTML(contents)
+		rows = page.css('body table tr')
+		time_row = rows[1]
+		date = Converter::PM10.new.date_from_html(contents)
+		Converter::PM10.new.data_rows_values(rows, time_row, date)[:data].length.should == 89
 	end
 end

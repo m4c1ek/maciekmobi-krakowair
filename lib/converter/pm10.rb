@@ -12,14 +12,10 @@ module Converter
 	class PM10
 		def convert(html)
 			page = Nokogiri::HTML(html)
-			timestamps = page.css('body table tbody tr')
-
-			data = { :data => [
-				{ :timestamp => 12, :value => 50, :location => "Krakow - Krowodza", :unit => "µg/m" }, 
-				{ :timestamp => 12, :value => 50, :location => "Krakow - Krowodza", :unit => "µg/m" }, 
-				{ :timestamp => 12, :value => 50, :location => "Krakow - Krowodza", :unit => "µg/m" } 
-				] }
-			return data
+			rows = page.css('body table tr')
+			time_row = rows[1]
+			date = Converter::PM10.new.date_from_html(html)
+			return data_rows_values(rows, time_row, date)
 		end
 
 		def date_from_html(html)
@@ -36,10 +32,16 @@ module Converter
 			combined_values = []
 			time_row_values.each_with_index { |value, i|
 				if (!value.nil? && !row_values[i].nil?) 
-					then combined_values << {:timestamp => date+(value*60*60), :value => row_values[i], :unit => unit } 
+					then combined_values << {:timestamp => date+(value*60*60), :value => row_values[i], :unit => unit, :location => location } 
 				end 
 			}
-			return {:location => location, :data => combined_values }
+			return {:data => combined_values }
+		end
+
+		def data_rows_values(rows, time_row, date)
+			all_rows = {:data => []}
+			rows.select{|row| data_row?(row)}.each {|data_row| all_rows[:data] = data_row_values(data_row, time_row, date)[:data] | all_rows[:data] }
+			return all_rows
 		end
 
 		def data_row?(row)
