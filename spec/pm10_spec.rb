@@ -1,4 +1,5 @@
 require 'nokogiri'
+require 'httparty'
 require_relative '../lib/converter/pm10'
 
 describe Converter::PM10 do
@@ -78,5 +79,10 @@ describe Converter::PM10 do
 		time_row = rows[1]
 		date = Converter::PM10.new.date_from_html(contents)
 		Converter::PM10.new.data_rows_values(rows, time_row, date)[:data].length.should == 89
+	end
+
+	it "integration test" do
+		response = HTTParty.get('http://213.17.128.227/iseo/aktualne_parametr.php?parametr=24')
+		p Converter::PM10.new.convert(response.body)	
 	end
 end
