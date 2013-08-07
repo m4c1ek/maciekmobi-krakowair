@@ -8,3 +8,8 @@ get '/' do
 	response = HTTParty.get('http://213.17.128.227/iseo/aktualne_parametr.php?parametr=24')
 	Converter::PM10.new.convert(response.body).to_json
 end
+
+get '/ping' do
+	content_type 'text/plain'
+	'pong'
+end
