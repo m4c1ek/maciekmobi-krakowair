@@ -6,15 +6,20 @@ class String
   def is_integer?
     self.to_i.to_s == self
   end
+
+  def is_float?
+    !!Float(self) rescue false
+  end
+
 end
 
 module Converter
-	class PM10
+	class AirParameter
 		def convert(html)
 			page = Nokogiri::HTML(html)
 			rows = page.css('body table tr')
 			time_row = rows[1]
-			date = Converter::PM10.new.date_from_html(html)
+			date = Converter::AirParameter.new.date_from_html(html)
 			return data_rows_values(rows, time_row, date)
 		end
 
@@ -46,7 +51,7 @@ module Converter
 
 		def data_row?(row)
 			return false if time_row?(row) 
-			numbers = row.css('td').map {|td| td.text.strip}.select {|text| text.is_integer? }
+			numbers = row.css('td').map {|td| td.text.strip}.select {|text| text.is_integer? || text.is_float?}
 			return numbers.size > 0
 		end
 
@@ -77,9 +82,15 @@ module Converter
 		protected
 
 		def row_values(row)
-			values = row.css('td').map { |td| 
+			l = ->(td) { 
 				value = td.text.strip
-				(value.empty? || !value.is_integer?) ? nil : value.to_i
+				return value.to_i if value.is_integer?
+				return value.to_f if value.is_float?
+				return nil 
+			}
+
+			values = row.css('td').map { |td| 
+				l.call(td)
 			}
 			return values
 		end

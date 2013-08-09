@@ -3,9 +3,19 @@ require 'httparty'
 require 'json'
 require_relative 'lib/converter/pm10'
 
-get '/' do
+
+parameters_map = {
+	'PM10' => 'http://monitoring.krakow.pios.gov.pl/iseo/aktualne_parametr.php?parametr=24',
+	'NO' => 'http://monitoring.krakow.pios.gov.pl/iseo/aktualne_parametr.php?parametr=02',
+	'SO2' => 'http://monitoring.krakow.pios.gov.pl/iseo/aktualne_parametr.php?parametr=01',
+	'TP' => 'http://monitoring.krakow.pios.gov.pl/iseo/aktualne_parametr.php?parametr=54'
+}
+
+get '/today/:name' do
 	content_type 'application/json'
-	response = HTTParty.get('http://213.17.128.227/iseo/aktualne_parametr.php?parametr=24')
+	p params[:name]
+	p parameters_map[params[:name]]
+	response = HTTParty.get(parameters_map[params[:name]])
 	Converter::PM10.new.convert(response.body).to_json
 end
 
