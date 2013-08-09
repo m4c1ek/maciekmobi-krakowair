@@ -91,8 +91,8 @@ describe Converter::AirParameter do
 		Converter::AirParameter.new.data_rows_values(rows, time_row, date)[:data].length.should == 20
 	end
 
-	# it "integration test" do
-	# 	response = HTTParty.get('http://213.17.128.227/iseo/aktualne_parametr.php?parametr=24')
-	# 	p Converter::AirParameter.new.convert(response.body)	
-	# end
+	it "integration test" do
+		response = HTTParty.get('http://213.17.128.227/iseo/aktualne_parametr.php?parametr=24')
+		p Converter::AirParameter.new.convert(response.body)	
+	end
 end
