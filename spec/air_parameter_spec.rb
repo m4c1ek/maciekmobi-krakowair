@@ -7,9 +7,9 @@ describe Converter::AirParameter do
 	p10_file = File.dirname(__FILE__) + "/html/pm10.html"
 	tp_file = File.dirname(__FILE__) + "/html/tp.html"
 
-	it "should convert to map" do
+	it "should convert to array" do
 		contents = File.open(p10_file, "r").read
-		Converter::AirParameter.new.convert(contents)[:data].length.should == 89
+		Converter::AirParameter.new.convert(contents).length.should == 89
 	end
 
 	it "should parse date" do
@@ -48,7 +48,7 @@ describe Converter::AirParameter do
 		time_row = rows[1]
 		date = Converter::AirParameter.new.date_from_html(contents)
 		Converter::AirParameter.new.data_row_values(row, time_row, date).should == 
-		{ :data => [{:timestamp=>1375138800, :value=>34, :unit=>"µg/m3", :location => "Tarnów"},
+		[{:timestamp=>1375138800, :value=>34, :unit=>"µg/m3", :location => "Tarnów"},
          {:timestamp=>1375142400, :value=>35, :unit=>"µg/m3", :location => "Tarnów"},
          {:timestamp=>1375146000, :value=>37, :unit=>"µg/m3", :location => "Tarnów"},
          {:timestamp=>1375149600, :value=>50, :unit=>"µg/m3", :location => "Tarnów"},
@@ -57,7 +57,7 @@ describe Converter::AirParameter do
          {:timestamp=>1375160400, :value=>24, :unit=>"µg/m3", :location => "Tarnów"},
          {:timestamp=>1375164000, :value=>21, :unit=>"µg/m3", :location => "Tarnów"},
          {:timestamp=>1375167600, :value=>18, :unit=>"µg/m3", :location => "Tarnów"},
-         {:timestamp=>1375171200, :value=>19, :unit=>"µg/m3", :location => "Tarnów"}] }
+         {:timestamp=>1375171200, :value=>19, :unit=>"µg/m3", :location => "Tarnów"}]
 	end
 
 	it "should find time row" do
@@ -69,8 +69,8 @@ describe Converter::AirParameter do
 
 	it "should get data rows as block" do
 		contents = File.open(p10_file, "r").read
-		Converter::AirParameter.new.each_data_row(contents){|row| row[:data][0][:location].nil?.should == false}
-		Converter::AirParameter.new.each_data_row(contents){|row| row[:data].length.should > 0}
+		Converter::AirParameter.new.each_data_row(contents){|row| row[0][:location].nil?.should == false}
+		Converter::AirParameter.new.each_data_row(contents){|row| row.length.should > 0}
 	end
 
 	it "should get data pm10 rows values" do
@@ -79,7 +79,7 @@ describe Converter::AirParameter do
 		rows = page.css('body table tr')
 		time_row = rows[1]
 		date = Converter::AirParameter.new.date_from_html(contents)
-		Converter::AirParameter.new.data_rows_values(rows, time_row, date)[:data].length.should == 89
+		Converter::AirParameter.new.data_rows_values(rows, time_row, date).length.should == 89
 	end
 
 	it "should get data tp rows values" do
@@ -88,7 +88,7 @@ describe Converter::AirParameter do
 		rows = page.css('body table tr')
 		time_row = rows[1]
 		date = Converter::AirParameter.new.date_from_html(contents)
-		Converter::AirParameter.new.data_rows_values(rows, time_row, date)[:data].length.should == 20
+		Converter::AirParameter.new.data_rows_values(rows, time_row, date).length.should == 20
 	end
 
 	it "integration test" do

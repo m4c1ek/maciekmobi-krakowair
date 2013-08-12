@@ -36,16 +36,16 @@ module Converter
 			unit = row_unit(row)
 			combined_values = []
 			time_row_values.each_with_index { |value, i|
-				if (!value.nil? && !row_values[i].nil?) 
-					then combined_values << {:timestamp => date+(value*60*60), :value => row_values[i], :unit => unit, :location => location } 
+				if (!value.nil? && !row_values[i].nil?) then 
+					combined_values << {:timestamp => date+(value*60*60), :value => row_values[i], :unit => unit, :location => location } 
 				end 
 			}
-			return {:data => combined_values }
+			return combined_values
 		end
 
 		def data_rows_values(rows, time_row, date)
-			all_rows = {:data => []}
-			rows.select{|row| data_row?(row)}.each {|data_row| all_rows[:data] = data_row_values(data_row, time_row, date)[:data] | all_rows[:data] }
+			all_rows = []
+			rows.select{|row| data_row?(row)}.each {|data_row| all_rows.concat data_row_values(data_row, time_row, date) }
 			return all_rows
 		end
 
